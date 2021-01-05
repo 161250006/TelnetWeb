@@ -1,0 +1,6 @@
+conf terminal
+hostname ${hostname}
+interface s0/0/0
+ip address ${ip_address} ${mask}
+no shutdown
+end

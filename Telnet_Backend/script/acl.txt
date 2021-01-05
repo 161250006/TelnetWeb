@@ -1,0 +1,6 @@
+conf t
+access-l 100 deny icmp host ${ip_address1} host ${ip_address1}
+access-l 100 permit icmp any any
+interface s0/0/0
+ip access group 100 in
+end
