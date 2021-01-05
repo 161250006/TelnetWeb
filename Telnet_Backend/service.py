@@ -1,31 +1,27 @@
 import telnetlib
+import time
 
-hostA = ""
-usernameA = ""
-passwordA = ""
+hostA = "192.168.1.3"
+passwordA = b"123456"
 RTA = None
 
-hostB = ""
-usernameB = ""
-passwordB = ""
+hostB = "192.168.1.4"
+passwordB = b"123456"
 RTB = None
 
 
 def connect():
     global RTA
-    RTA = connect_to_routing(hostA, usernameA, passwordA)
+    RTA = connect_to_routing(hostA,  passwordA)
     global RTB
-    RTB = connect_to_routing(hostB, usernameB, passwordB)
+    RTB = connect_to_routing(hostB, passwordB)
 
 
-def connect_to_routing(host, username, password):
+def connect_to_routing(host, password):
     tn = telnetlib.Telnet(host)
 
-    tn.read_until('login:')
-    tn.write(username + '\n')
-
-    tn.read_until('Password:')
-    tn.write(password + '\n')
+    tn.read_until(b'Password:')
+    tn.write(password + b'\n')
     return tn
 
 
@@ -34,6 +30,9 @@ def send_command(command, routing):
         tn = RTA
     else:
         tn = RTB
-    tn.read_some()
-    tn.write(command + '\n')
-    return tn.read_some()
+    tn.write(bytes(command, encoding='UTF-8') + b'\n')
+    if command.startswith('ping'):
+        time.sleep(5)
+    else:
+        time.sleep(1)
+    return tn.read_very_eager()
