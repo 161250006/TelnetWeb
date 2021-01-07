@@ -1,3 +1,4 @@
+import re
 import telnetlib
 import time
 
@@ -62,7 +63,13 @@ def verify(routing):
 # 返回命令列表
 def read_commands(filename, *args):
     res = []
-    # TODO
+    file_path = "./script/" + filename
+    with open(file_path, 'r') as f:
+        content = f.read()
+        matches = re.findall(r"(?<=\$\{).*?(?=\})", content)
+        for i in range(len(matches)):
+            content = content.replace("${" + matches[i] + "}", str(args[i]))
+        res = content.split('\n')
     return res
 
 
