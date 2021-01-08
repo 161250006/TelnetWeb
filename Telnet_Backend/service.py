@@ -44,7 +44,10 @@ def init_config(routing, hostname, ip_address, mask):
 
 
 def acl_config(routing):
-    commands = read_commands("acl.txt", rta_s0, rta_s0)
+    rt1_s0 = rtb_s0 if routing == 'RTA' else rta_s0
+    rt2_s0 = rta_s0 if routing == 'RTA' else rtb_s0
+
+    commands = read_commands("acl.txt", rt1_s0, rt2_s0)
     return send_commands(commands, routing, 5)
 
 
@@ -54,7 +57,8 @@ def cancel_acl_config(routing):
 
 
 def verify(routing):
-    commands = read_commands("ping.txt", rtb_s0)
+    rt_s0 = rta_s0 if routing == 'RTA' else rtb_s0
+    commands = read_commands("ping.txt", rt_s0)
     return send_commands(commands, routing, 5)
 
 
@@ -62,7 +66,6 @@ def verify(routing):
 # 按顺序使用args中的元素替换
 # 返回命令列表
 def read_commands(filename, *args):
-    res = []
     file_path = "./script/" + filename
     with open(file_path, 'r') as f:
         content = f.read()
@@ -75,10 +78,7 @@ def read_commands(filename, *args):
 
 # 发送命令到路由器
 def send_commands(commands, routing, time_interval):
-    if routing == 'RTA':
-        tn = RTA
-    else:
-        tn = RTB
+    tn = RTA if routing == 'RTA' else RTB
 
     for one_command in commands:
         tn.write(bytes(one_command, encoding='UTF-8') + b'\n')
