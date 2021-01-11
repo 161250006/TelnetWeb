@@ -1,13 +1,202 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>trs_frontend</title>
+          <script type="text/javascript" src="../static/js/vis-network.min.js"></script>
+    <script type="text/javascript" src="../static/js/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+
+    <link href="../static/css/bootstrap.min.css"
+          rel="stylesheet" />
+ <meta charset="UTF-8">
+    <style type="text/css">
+        #mynetwork {
+            width: 600px;
+            height: 400px;
+            border: 1px solid lightgray;
+        }
+    </style>
   </head>
-  <body>
-    <div id="app"></div>
-    <p>TelnetWeb_Frontend</p>
-    <!-- built files will be auto injected -->
-  </body>
+<body>
+
+<form class="form-inline">
+  <div class="form-group">
+    <label  for="r0">R0_IP</label>
+    <input type="text" class="form-control" id="r0ip" placeholder="输入IP">
+  </div>
+  <div class="form-group">
+    <label  for="r1">R0_掩码</label>
+    <input type="text" class="form-control" id="r0mask" placeholder="输入掩码">
+  </div>
+  <div class="form-group">
+    <label  for="r0">R0_hostname</label>
+    <input type="text" class="form-control" id="r0hostname" placeholder="输入hostname">
+  </div>
+   <button type="button" class="btn btn-primary" id="r0pz" onclick="config('RTA')">配置</button>
+   <button type="button" class="btn btn-primary" id="r0fs" onclick="acl('RTB')">R0->R1封杀</button>
+    <button type="button" class="btn btn-primary" id="r0jf" onclick="cancel('RTB')">R0->R1解封</button>
+</form>
+<form class="form-inline">
+  <div class="form-group">
+    <button type="button" class="btn btn-primary" onclick="ping('RTA')" >ping R0->R1</button>
+  </div>
+  <textarea class="form-control" id="r0textare" rows="10" style="min-width: 60%"></textarea>
+
+</form>
+
+<div id="mynetwork"></div>
+
+	<form class="form-inline">
+  <div class="form-group">
+    <label  for="r1">R1_IP</label>
+    <input type="text" class="form-control" id="r1ip" placeholder="输入IP">
+  </div>
+  <div class="form-group">
+    <label  for="r1">R1_掩码</label>
+    <input type="text" class="form-control" id="r1mask" placeholder="输入掩码">
+  </div>
+  <div class="form-group">
+    <label  for="r1">R1_hostname</label>
+    <input type="text" class="form-control" id="r1hostname" placeholder="输入hostname">
+  </div>
+   <button type="button" class="btn btn-primary" id="r1pz" onclick="config('RTB')">配置</button>
+   <button type="button" class="btn btn-primary" id="r1fs" onclick="acl('RTA')">R1->R0封杀</button>
+    <button type="button" class="btn btn-primary"id="r1jf" onclick="cancel('RTA')">R1->R0解封</button>
+</form>
+<form class="form-inline">
+  <div class="form-group">
+    <button type="button" class="btn btn-primary" onclick="ping('RTB')">ping R1->R0</button>
+  </div>
+  <textarea class="form-control" id="r1textarea" rows="10" style="min-width: 60%"></textarea>
+
+</form>
+
+<script type="text/javascript">
+
+    var nodes = new vis.DataSet([
+        { id: 1, label: "电脑pc0" ,image:"../static/img/computer.png", shape: 'image'},
+        { id: 2, label: "交换机s1" ,image:"../static/img/switch.png", shape: 'image'},
+        { id: 3, label: "路由器r0",image:"../static/img/router.png" , shape: 'image'},
+        { id: 4, label: "路由器r1",image:"../static/img/router.png" , shape: 'image'},
+    ]);
+
+    // 创建边数据数组
+    var edges = new vis.DataSet([
+        { from: 1, to: 2},
+        { from: 2, to: 3 },
+        { from: 2, to: 4 },
+        { from: 3, to: 4 }
+    ]);
+
+    // 获取容器
+    var container = document.getElementById('mynetwork');
+
+    // 将数据赋值给vis 数据格式化器
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {  edges:{
+            arrows: {
+            	from:{enabled: true, scaleFactor: 0.3, type: 'circle'},
+                to: {enabled: true, scaleFactor: 0.3, type: 'circle'}
+            }
+        }
+
+};
+
+    // 初始化关系图
+    var network = new vis.Network(container, data, options);
+
+    function config(router) {
+        var ip;
+        var mask;
+        var hostname;
+        if (router === 'RTA'){
+            ip = document.getElementById("r0ip").value;
+            mask = document.getElementById("r0mask").value;
+            hostname = document.getElementById("r0hostname").value;
+        }
+        else {
+            ip = document.getElementById("r1ip").value;
+            mask = document.getElementById("r1mask").value;
+            hostname = document.getElementById("r1hostname").value;
+        }
+    $.ajax({
+        type: 'GET',
+        url:"/init_config",
+        async: false,                         //将ajax改为同步模式
+        data: {
+            routing : router,
+            hostname:hostname,
+            ip_address:ip,
+            mask:mask
+        },
+        success:function(result){
+            alert("配置成功！")
+        },
+        error:function(){
+            alert("配置失败！");
+        }
+    });
+}
+
+    function acl(router) {
+    $.ajax({
+        type: 'GET',
+        url:"/acl_config",
+        async: false,                         //将ajax改为同步模式
+        data: {
+            routing : router
+        },
+        success:function(result){
+            alert("acl设置成功")
+        },
+        error:function(){
+            alert("acl设置失败");
+        }
+    });
+}
+
+    function cancel(router) {
+    $.ajax({
+        type: 'GET',
+        url:"/cancel_acl_config",
+        async: false,                         //将ajax改为同步模式
+        data: {
+            routing:router
+        },
+        success:function(result){
+            alert("acl清除成功")
+        },
+        error:function(){
+            alert("acl清除失败");
+        }
+    });
+}
+
+    function ping(router) {
+    $.ajax({
+        type: 'GET',
+        url:"/verify",
+        async: false,                         //将ajax改为同步模式
+        data: {
+            routing:router
+        },
+        success:function(result){
+            if (router === 'RTA') {
+                document.getElementById("r0textarea").innerText = result;
+            }
+            else {
+                document.getElementById("r1textarea").innerText = result;
+            }
+        },
+        error:function(){
+            alert("ping失败");
+        }
+    });
+}
+</script>
+</body>
 </html>
