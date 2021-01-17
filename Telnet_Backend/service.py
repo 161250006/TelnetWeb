@@ -1,3 +1,4 @@
+import os
 import re
 import telnetlib
 import time
@@ -18,10 +19,11 @@ def connect():
     RTA = connect_to_routing(rta_f0)
     global RTB
     RTB = connect_to_routing(rtb_f0)
-
+    print(RTA is None)
+    print(RTB is None)
 
 def connect_to_routing(host):
-    tn = telnetlib.Telnet(host)
+    tn = telnetlib.Telnet(host, timeout=400000)
 
     tn.read_until(b'Password:')
     tn.write(password + b'\n')
@@ -40,7 +42,7 @@ def init_config(routing, hostname, ip_address, mask):
         rtb_s0 = ip_address
 
     commands = read_commands("config.txt", hostname, ip_address, mask)
-    return send_commands(commands, routing, 5)
+    return send_commands(commands, routing, 1)
 
 
 def acl_config(routing):
@@ -48,25 +50,28 @@ def acl_config(routing):
     rt2_s0 = rta_s0 if routing == 'RTA' else rtb_s0
 
     commands = read_commands("acl.txt", rt1_s0, rt2_s0)
-    return send_commands(commands, routing, 5)
+    return send_commands(commands, routing, 1)
 
 
 def cancel_acl_config(routing):
     commands = read_commands("cancel.txt")
-    return send_commands(commands, routing, 5)
+    return send_commands(commands, routing, 1)
 
 
 def verify(routing):
-    rt_s0 = rta_s0 if routing == 'RTA' else rtb_s0
+    rt_s0 = rta_s0 if routing == 'RTB' else rtb_s0
     commands = read_commands("ping.txt", rt_s0)
-    return send_commands(commands, routing, 5)
+    result = send_commands(commands, routing, 5)
+    # result = str(result).replace('\\r\\n', '\\n')
+    print(result)
+    return result
 
 
 # 读取文件中的命令，并替换掉其中的占位词
 # 按顺序使用args中的元素替换
 # 返回命令列表
 def read_commands(filename, *args):
-    file_path = "./script/" + filename
+    file_path = os.path.join(os.path.abspath('.'),'Telnet_Backend','script',filename)
     with open(file_path, 'r') as f:
         content = f.read()
         matches = re.findall(r"(?<=\$\{).*?(?=\})", content)
@@ -79,6 +84,8 @@ def read_commands(filename, *args):
 # 发送命令到路由器
 def send_commands(commands, routing, time_interval):
     tn = RTA if routing == 'RTA' else RTB
+
+    tn.read_very_eager()
 
     for one_command in commands:
         tn.write(bytes(one_command, encoding='UTF-8') + b'\n')

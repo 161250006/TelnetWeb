@@ -17,6 +17,8 @@ def init_config(request):
         ip_address = request.GET.get('ip_address')
         mask = request.GET.get('mask')
 
+        print('routing' + routing)
+
         return HttpResponse(service.init_config(routing, hostname, ip_address, mask))
 
 

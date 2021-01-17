@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>trs_frontend</title>
+    <title>telnet_acl</title>
           <script type="text/javascript" src="../static/js/vis-network.min.js"></script>
     <script type="text/javascript" src="../static/js/jquery-2.2.4.min.js"></script>
     <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
@@ -41,7 +41,7 @@
   <div class="form-group">
     <button type="button" class="btn btn-primary" onclick="ping('RTA')" >ping R0->R1</button>
   </div>
-  <textarea class="form-control" id="r0textare" rows="10" style="min-width: 60%"></textarea>
+  <textarea class="form-control" id="r0textarea" rows="10" style="min-width: 60%"></textarea>
 
 </form>
 
@@ -185,11 +185,12 @@
             routing:router
         },
         success:function(result){
+
             if (router === 'RTA') {
-                document.getElementById("r0textarea").innerText = result;
+                document.getElementById("r0textarea").innerHTML = result;
             }
             else {
-                document.getElementById("r1textarea").innerText = result;
+                document.getElementById("r1textarea").innerHTML = result;
             }
         },
         error:function(){
