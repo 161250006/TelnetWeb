@@ -16,9 +16,9 @@ password = b"123456"
 
 def connect():
     global RTA
-    RTA = connect_to_routing(rta_f0)
+    # RTA = connect_to_routing(rta_f0)
     global RTB
-    RTB = connect_to_routing(rtb_f0)
+    # RTB = connect_to_routing(rtb_f0)
     print(RTA is None)
     print(RTB is None)
 
